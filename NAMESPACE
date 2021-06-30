@@ -1,0 +1,8 @@
+exportPattern("^[[:alpha:]]+")
+importFrom("stats", "AIC", "arima", "coef", "dnorm", "embed", "is.ts",
+             "lm", "sd", "tsp", "var")
+importFrom("utils", "capture.output")
+# Import all packages listed as Imports or Depends
+import(
+  mixtools, tseries
+)
