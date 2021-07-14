@@ -9,7 +9,7 @@
   Fits an ARMA model to misreported time series data.
 }
 \usage{
-  fitMisRepARMA(y, tol, B, alpha, p_AR, q_MA, covars=NULL, misReport="U")
+  fitMisRepARMA(y, tol, B, p_AR, q_MA, covars=NULL, misReport="U", ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -21,9 +21,6 @@
 }
   \item{B}{
   the number of bootstrap series to compute.
-}
-  \item{alpha}{
-  significance level.
 }
 \item{p_AR}{
   order of the AR part.
@@ -37,21 +34,23 @@
 \item{misReport}{
   direction of misreporting issue. Its default value is \code{U} for underreported data, can also take the value \code{O} for overreported data.
 }
+\item{...}{
+  additional arguments to pass to \code{tsboot}, for instance those regarding parallelization.
+}
 }
 
 \details{
-The stationary bootstrap scheme with mean block length \code{b} according to Politis and Romano (1994) is computed.
+The model based resampling scheme with \code{B} bootstrap resamples is computed. This
 }
 
 \value{
-A list of class \code{resample.statistic} with the following elements is returned:
+An object of class \code{fitMisRepARMA} with the following elements is returned:
 
 \itemize{
-  \item \code{statistic}: the results of applying statistic to each of the simulated time series.
-  \item \code{orig.statistic}: the results of applying statistic to the original series.
-  \item \code{bias}: the bootstrap estimate of the bias of statistic.
-  \item \code{se}: the bootstrap estimate of the standard error of statistic.
-  \item \code{call}: the original call of tsbootstrap.
+  \item \code{data}: The original time series.
+  \item \code{t0}: The results of applying statistic to the original series.
+  \item \code{t}: Estimates on each replicated time series.
+  \item \code{call}: The original call to tsboot.
 }
 }
 
@@ -60,9 +59,13 @@ David Moriña, Amanda Fernández-Fontelo, Alejandra Cabaña, Pedro Puig
 }
 
 \references{
-D. Moriña, A. Fernández-Fontelo, A. Cabaña, P. Puig (2021): New statistical model for misreported data with application to current public health challenges. arXiv preprint (https://arxiv.org/pdf/2003.09202.pdf)
+Davison, A.C. and Hinkley, D.V. (1997) Bootstrap Methods and Their Application. Cambridge University Press.
 
-D. N. Politis and J. P. Romano (1994): The Stationary Bootstrap. Journal of the American Statistical Association \bold{89}, 1303–1313.
+Kunsch, H.R. (1989) The jackknife and the bootstrap for general stationary observations. Annals of Statistics, \bold{17}, 1217–1241.
+
+Moriña, D., Fernández-Fontelo, A., Cabaña, A., Puig, P. (2021): New statistical model for misreported data with application to current public health challenges. arXiv preprint (https://arxiv.org/pdf/2003.09202.pdf)
+
+Politis, D.N. and Romano, J.P. (1994) The stationary bootstrap. Journal of the American Statistical Association, \bold{89}, 1303–1313.
 }
 
 \seealso{

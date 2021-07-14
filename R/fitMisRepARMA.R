@@ -1,25 +1,45 @@
-### Estimació amb interval de confiança (bootstrap paramètric) per tots els paràmetres
-fitMisRepARMA <- function(y, tol, B, alpha, p_AR, q_MA, covars=NULL, misReport="U")
+fitMisRepARMA <- function(y, tol, B, p_AR, q_MA, covars=NULL, misReport="U", ...)
 {
+  Call <- match.call()
   params_post <- NA
   class(params_post) <- "try-error"
   j <- 1
-  while(class(params_post)=="try-error" & j < 10)
+  orig.model <- estimate(as.numeric(y), tol, p_AR, q_MA, covars=covars, misReport)
+  if (!is.null(covars))
   {
-    invisible(capture.output(params_post <- try(tsbootstrap(y, nb=B, statistic=estimate, 
-              type="stationary", tol=tol, p_AR=p_AR, q_MA=q_MA, covars=covars, misReport=misReport), silent=TRUE)))
-    j <- j + 1
+    while(class(params_post)=="try-error" & j < 10)
+    {
+      invisible(capture.output(params_post <- try(tsboot(y, statistic=estimate, R=B, sim="model", orig.t=TRUE, n.sim=length(y),
+                                                         ran.gen=ran.genf, ran.args=list(ar=orig.model[grepl("ar", names(orig.model)) & !grepl("var", names(orig.model))],
+                                                                                         ma=orig.model[grepl("ma", names(orig.model))],
+                                                                                         intercept=orig.model[grepl("intercept", names(orig.model))],
+                                                                                         var=attr(orig.model, "var"),
+                                                                                         q=attr(orig.model, "q"),
+                                                                                         w=attr(orig.model, "w"),
+                                                                                         z=attr(orig.model, "z"),
+                                                                                         misReport=misReport), 
+                                                         ...,
+                                                         tol=tol, p_AR=p_AR, q_MA=q_MA, covars=covars, misReport=misReport), silent=TRUE)))
+      j <- j + 1
+    }
+  }else{
+    while(class(params_post)=="try-error" & j < 10)
+    {
+      invisible(capture.output(params_post <- try(tsbootstrap(y, nb=B, statistic=estimate, 
+                                                              type="stationary", tol=tol, p_AR=p_AR, q_MA=q_MA, covars=covars, misReport=misReport), silent=TRUE)))
+      j <- j + 1
+    }
+    params_post$t  <- params_post$statistic
+    params_post$t0 <- params_post$orig.statistic
   }
-  n_alphas <- vector()
-  n_thetas <- vector()
-  for (i in 1:p_AR)
-  {
-    n_alphas[i] <- paste0("alpha", i)
-  }
-  for (i in 1:q_MA)
-  {
-    n_thetas[i] <- paste0("theta", i)
-  }
-  colnames(params_post$statistic) <- c("const", n_alphas, n_thetas, "var", "q", "w", "AIC")
+  colnames(params_post$t) <- names(orig.model)
+  names(params_post$t0) <- names(orig.model)
+  params_post <- list(data=y, t0=params_post$t0, t=params_post$t)
+  class(params_post) <- c("fitMisRepARMA")
+  attr(params_post, "covars") <- attr(orig.model, "covars")
+  attr(params_post, "q") <- attr(orig.model, "q")
+  attr(params_post, "w") <- attr(orig.model, "w")
+  attr(params_post, "z") <- attr(orig.model, "z")
+  attr(params_post, "Call") <- Call
   return(params_post) 
 }
